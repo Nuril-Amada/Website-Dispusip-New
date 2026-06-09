@@ -127,7 +127,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   });
 
-  /* ================= FETCH JSON ================= */
+/* ================= FETCH JSON ================= */
 
 fetch('dashboard_final.json')
   .then(response => response.json())
@@ -135,35 +135,41 @@ fetch('dashboard_final.json')
 
     console.log("JSON berhasil dibaca:", data);
 
-    // Data aktual (IKM tidak null)
+    // ================= DATA =================
+
     const validData = data.filter(
       item => item["IKM Konversi"] !== null
     );
 
-    // Data forecasting (IKM null)
     const forecastData = data.filter(
-      item => item["IKM Konversi"] === null
+      item => item["Forecast"] !== null
     );
 
-    const latest = validData[validData.length - 1];
+    const latest =
+      validData[validData.length - 1];
 
     const avgIKM =
-      validData.reduce((sum, item) =>
-        sum + item["IKM Konversi"], 0
+      validData.reduce(
+        (sum, item) =>
+          sum + item["IKM Konversi"],
+        0
       ) / validData.length;
 
-    const lastPrediksi =
+    const lastForecast =
       forecastData.length > 0
-        ? forecastData[forecastData.length - 1]["Prediksi"]
+        ? forecastData[forecastData.length - 1]["Forecast"]
         : latest["Prediksi"];
 
-    const totalData = data.length;
+    const totalData =
+      data.length;
 
     const persentase =
       latest["IKM Konversi"];
 
     const tanggal =
-      new Date(latest["Tanggal"]).toLocaleDateString(
+      new Date(
+        latest["Tanggal"]
+      ).toLocaleDateString(
         "id-ID",
         {
           month: "long",
@@ -177,7 +183,7 @@ fetch('dashboard_final.json')
       avgIKM.toFixed(2) + "%";
 
     document.getElementById("lastPrediksi").innerText =
-      lastPrediksi.toFixed(2);
+      lastForecast.toFixed(2)+ "%";
 
     document.getElementById("totalData").innerText =
       totalData;
@@ -191,34 +197,59 @@ fetch('dashboard_final.json')
       ${tanggal}
       `;
 
-    /* ================= GRAFIK IKM ================= */
+    // ================= LABEL =================
 
     const labels = data.map(item => {
-      const date = new Date(item["Tanggal"]);
 
-      return date.toLocaleDateString("id-ID", {
-        month: "short",
-        year: "numeric"
-      });
+      const date =
+        new Date(item["Tanggal"]);
+
+      return date.toLocaleDateString(
+        "id-ID",
+        {
+          month: "short",
+          year: "numeric"
+        }
+      );
+
     });
 
-    // Data aktual
-    const dataAktual = data.map(item =>
-      item["IKM Konversi"] !== null
-        ? item["IKM Konversi"]
-        : null
-    );
+    // ================= DATA AKTUAL =================
 
-    // Data forecast
-    const dataForecast = data.map(item =>
-      item["IKM Konversi"] === null
-        ? item["Prediksi"]
-        : null
-    );
+    const dataAktual =
+      data.map(item =>
+        item["IKM Konversi"]
+          !== null
+          ? item["IKM Konversi"]
+          : null
+      );
 
-    const ctx = document
-      .getElementById("ikmChart")
-      .getContext("2d");
+    // ================= FITTING MODEL =================
+
+    const dataPrediksi =
+      data.map(item =>
+        item["Prediksi"]
+          !== null
+          ? item["Prediksi"]
+          : null
+      );
+
+    // ================= FORECAST =================
+
+    const dataForecast =
+      data.map(item =>
+        item["Forecast"]
+          !== null
+          ? item["Forecast"]
+          : null
+      );
+
+    // ================= CHART =================
+
+    const ctx =
+      document
+        .getElementById("ikmChart")
+        .getContext("2d");
 
     new Chart(ctx, {
 
@@ -229,6 +260,8 @@ fetch('dashboard_final.json')
         labels: labels,
 
         datasets: [
+
+          // ================= AKTUAL =================
 
           {
             label: "IKM Aktual",
@@ -252,6 +285,35 @@ fetch('dashboard_final.json')
 
             spanGaps: true
           },
+
+          // ================= FITTING =================
+
+          {
+            label: "Hasil Prediksi Model",
+
+            data: dataPrediksi,
+
+            borderColor: "#2e7d32",
+
+            backgroundColor:
+              "rgba(46,125,50,0.15)",
+
+            borderDash: [6, 6],
+
+            borderWidth: 3,
+
+            pointRadius: 3,
+
+            pointHoverRadius: 6,
+
+            fill: false,
+
+            tension: 0.35,
+
+            spanGaps: true
+          },
+
+          // ================= FORECAST =================
 
           {
             label: "Forecasting 2026",
@@ -296,18 +358,23 @@ fetch('dashboard_final.json')
         plugins: {
 
           legend: {
+
             position: "top",
 
             labels: {
+
               font: {
                 size: 14
               }
+
             }
+
           },
 
           tooltip: {
 
-            backgroundColor: "#0d47a1",
+            backgroundColor:
+              "#0d47a1",
 
             titleFont: {
               size: 14
@@ -318,6 +385,7 @@ fetch('dashboard_final.json')
             },
 
             padding: 12
+
           }
 
         },
@@ -329,9 +397,11 @@ fetch('dashboard_final.json')
             beginAtZero: false,
 
             ticks: {
+
               font: {
                 size: 12
               }
+
             }
 
           },
@@ -339,9 +409,11 @@ fetch('dashboard_final.json')
           x: {
 
             ticks: {
+
               font: {
                 size: 11
               }
+
             }
 
           }
@@ -353,7 +425,13 @@ fetch('dashboard_final.json')
     });
 
   })
+
   .catch(error => {
-    console.error("JSON Error:", error);
+
+    console.error(
+      "JSON Error:",
+      error
+    );
+
   });
-  })
+  });
